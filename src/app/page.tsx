@@ -7,9 +7,13 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-  <Button>
-    <Link href="/login">Login</Link>
-    </Button> 
+  
+    <Link href="/login">
+      <Button>
+        登入
+      </Button>
+    </Link>
+    
   );
 }
 

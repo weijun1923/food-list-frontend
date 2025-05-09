@@ -19,9 +19,9 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>登入帳戶</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            請輸入電子郵件和密碼登入帳戶
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -32,35 +32,35 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="yourEmail@gmail.com"
                   required
                 />
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">密碼</Label>
                   <a
                     href="#"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    忘記密碼？
                   </a>
                 </div>
                 <Input id="password" type="password" required />
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full">
-                  Login
+                  登入
                 </Button>
                 <Button variant="outline" className="w-full">
-                  Login with Google
+                  使用Google登入
                 </Button>
               </div>
             </div>
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+              還沒有帳號嗎?{" "}
               <a href="#" className="underline underline-offset-4">
-                Sign up
+                註冊新帳號
               </a>
             </div>
           </form>
