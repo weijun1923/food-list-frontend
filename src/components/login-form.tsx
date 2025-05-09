@@ -10,6 +10,10 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+// 連結忘記密碼頁面
+import Link from "next/link"
+
+
 
 export function LoginForm({
   className,
@@ -38,13 +42,16 @@ export function LoginForm({
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
+                  {/* 忘記密碼路由 */}
+                  {/* <Link href="/forgot-password"> */}
                   <Label htmlFor="password">密碼</Label>
                   <a
-                    href="#"
+                    href="/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
+                    >
                     忘記密碼？
                   </a>
+                  {/* </Link> */}
                 </div>
                 <Input id="password" type="password" required />
               </div>
