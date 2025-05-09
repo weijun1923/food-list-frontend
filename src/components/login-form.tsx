@@ -1,3 +1,4 @@
+// 登入頁面
 // login.tsx
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-// 連結忘記密碼頁面
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 
@@ -22,7 +23,12 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader>
+        <CardHeader className="space-y-1">
+          {/* 連結回首頁*/}
+            {/* 返回icon */}
+            <Link href="/" className="text-muted-foreground hover:text-foreground mr-2">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
           <CardTitle>登入帳戶</CardTitle>
           <CardDescription>
             請輸入電子郵件和密碼登入帳戶
@@ -43,7 +49,6 @@ export function LoginForm({
               <div className="grid gap-3">
                 <div className="flex items-center">
                   {/* 忘記密碼路由 */}
-                  {/* <Link href="/forgot-password"> */}
                   <Label htmlFor="password">密碼</Label>
                   <a
                     href="/forgot-password"
@@ -51,7 +56,6 @@ export function LoginForm({
                     >
                     忘記密碼？
                   </a>
-                  {/* </Link> */}
                 </div>
                 <Input id="password" type="password" required />
               </div>
@@ -66,7 +70,7 @@ export function LoginForm({
             </div>
             <div className="mt-4 text-center text-sm">
               還沒有帳號嗎?{" "}
-              <a href="#" className="underline underline-offset-4">
+              <a href="/sign-up" className="underline underline-offset-4">
                 註冊新帳號
               </a>
             </div>

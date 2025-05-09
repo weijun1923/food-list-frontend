@@ -1,3 +1,4 @@
+// 忘記密碼頁面
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,6 +12,7 @@ export default function ForgotPassword() {
         <CardHeader className="space-y-1">
           <div className="flex items-center">
             {/* 連結登入頁面   href="/login"*/}
+            {/* 返回icon */}
             <Link href="/login" className="text-muted-foreground hover:text-foreground mr-2">
               <ArrowLeft className="h-4 w-4" />
             </Link>
