@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Card from "./components/card";
+import TinderCard from "./components/card";
 import { cardData } from "@/app/libs/data";
 
 const SwipeCards = () => {
@@ -44,21 +44,28 @@ const SwipeCards = () => {
     setRemovedCards((prev) => prev.slice(0, prev.length - 1));
   };
   return (
-    <div
-      // 背景滿版
-      className="grid h-screen w-full place-items-center bg-neutral-100"
-    >
-      {cards.map((card) => {
-        return (
-          <Card key={card.id} cards={cards} removeCard={removeCard} {...card} />
-        );
-      })}
-      <button
-        className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        onClick={handleGoBack}
+    <div className=" container m-auto bg-neutral-300">
+      <div
+        // 背景滿版
+        className="grid  w-full place-items-center"
       >
-        回上一張
-      </button>
+        {cards.map((card) => {
+          return (
+            <TinderCard
+              key={card.id}
+              cards={cards}
+              removeCard={removeCard}
+              {...card}
+            />
+          );
+        })}
+        <button
+          className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          onClick={handleGoBack}
+        >
+          回上一張
+        </button>
+      </div>
     </div>
   );
 };
