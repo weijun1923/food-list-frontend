@@ -44,10 +44,10 @@ const SwipeCards = () => {
     setRemovedCards((prev) => prev.slice(0, prev.length - 1));
   };
   return (
-    <div className=" container m-auto bg-neutral-300">
+    <div className=" h-screen container m-auto bg-neutral-300">
       <div
         // 背景滿版
-        className="grid  w-full place-items-center"
+        className="grid  w-full place-items-center h-full"
       >
         {cards.map((card) => {
           return (
