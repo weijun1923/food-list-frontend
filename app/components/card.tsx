@@ -8,7 +8,6 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Heart, Undo2, X } from "lucide-react";
 import { CardProps } from "../types";
 import { cn } from "@/lib/utils";
@@ -63,13 +62,13 @@ export default function TinderCard({
         borderRadius: "0.5rem", // tailwind 的 rounded-lg
       }}
       // 卡片大小
-      className=" w-full lg:w-2/5 h-96 hover:cursor-grab active:cursor-grabbing"
+      className=" w-full lg:w-2/7 h-full hover:cursor-grab active:cursor-grabbing mt-3 px-2"
     >
       {/* 圖片 */}
 
       <Card
         className={cn(
-          " h-full grid grid-rows-12 gap-0 p-0 shadow-none",
+          " h-full grid grid-rows-12 gap-0 p-0 shadow-none w-full",
           isFront && "shadow-lg"
         )}
       >
@@ -90,15 +89,15 @@ export default function TinderCard({
           </p>
         </CardContent>
         <CardFooter className="flex justify-between row-span-2">
-          <Button>
-            <X />
-          </Button>
-          <Button>
-            <Undo2 />
-          </Button>
-          <Button>
-            <Heart />
-          </Button>
+          <button className="hover:bg-gray-100  transition-colors rounded-md p-2">
+            <X size={60} strokeWidth={2.25} />
+          </button>
+          <button className="hover:bg-gray-100  transition-colors rounded-md p-2">
+            <Undo2 size={60} strokeWidth={2.25} />
+          </button>
+          <button className="hover:bg-gray-100  transition-colors rounded-md p-2">
+            <Heart size={60} strokeWidth={2.25} />
+          </button>
         </CardFooter>
       </Card>
     </motion.div>
