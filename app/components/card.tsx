@@ -8,8 +8,10 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Heart, Undo2, X } from "lucide-react";
 import { CardProps } from "../types";
+import { cn } from "@/lib/utils";
 
 export default function TinderCard({
   id,
@@ -50,9 +52,7 @@ export default function TinderCard({
         gridRow: 1,
         gridColumn: 1,
         // 如果是最上層卡片，加上陰影
-        boxShadow: isFront
-          ? "0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5)"
-          : undefined,
+
         touchAction: "none",
         // 這裡同時控制縮放
         scale: isFront ? 1 : 0.98,
@@ -60,16 +60,20 @@ export default function TinderCard({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        backgroundColor: "white",
         borderRadius: "0.5rem", // tailwind 的 rounded-lg
       }}
       // 卡片大小
-      className=" w-2/5 h-96 hover:cursor-grab active:cursor-grabbing"
+      className=" w-full lg:w-2/5 h-96 hover:cursor-grab active:cursor-grabbing"
     >
       {/* 圖片 */}
 
-      <Card className=" h-full grid grid-rows-12 gap-0 p-0">
-        <CardHeader className="row-span-6 overflow-hidden relative p-0 m-0">
+      <Card
+        className={cn(
+          " h-full grid grid-rows-12 gap-0 p-0 shadow-none",
+          isFront && "shadow-lg"
+        )}
+      >
+        <CardHeader className="row-span-8 overflow-hidden relative p-0 m-0">
           <Image
             src={url}
             fill
@@ -78,7 +82,7 @@ export default function TinderCard({
             className=" w-full h-full rounded-t-lg object-cover"
           />
         </CardHeader>
-        <CardContent className="row-span-4 flex flex-col justify-center text-center p-4">
+        <CardContent className="row-span-2 flex flex-col justify-center text-center p-4">
           <h3 className="text-lg font-medium">{restaurantname}</h3>
           <p className="mt-1 text-sm text-gray-600">
             {/* 可以放描述或其他任意文字 */}
@@ -86,9 +90,15 @@ export default function TinderCard({
           </p>
         </CardContent>
         <CardFooter className="flex justify-between row-span-2">
-          <X />
-          <Undo2 />
-          <Heart />
+          <Button>
+            <X />
+          </Button>
+          <Button>
+            <Undo2 />
+          </Button>
+          <Button>
+            <Heart />
+          </Button>
         </CardFooter>
       </Card>
     </motion.div>
