@@ -1,103 +1,73 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useEffect } from "react";
+import TinderCard from "./components/card";
+import { cardData } from "@/app/libs/data";
 
-export default function Home() {
+const SwipeCards = () => {
+  const [cards, setCards] = useState([...cardData]);
+  // 用來存「已經滑掉的卡片」
+  const [removedCards, setRemovedCards] = useState<typeof cardData>([]);
+
+  useEffect(() => {
+    console.log("removeCards:", removedCards);
+  }, [removedCards]);
+
+  useEffect(() => {
+    console.log("cards :", cards);
+  }, [cards]);
+
+  // 這個函式是用來「移除一張卡片」然後把它存到 removedCards
+  const removeCard = (id: number) => {
+    // 1. 找到這張卡在 cards 裡的完整資訊
+    const cardToRemove = cards.find((c) => c.id === id);
+    if (!cardToRemove) return; // 如果找不到就不用做後面了
+
+    // 2. 把這張卡從 cards 裡濾掉
+    setCards((prev) => prev.filter((c) => c.id !== id));
+
+    // 3. 將這張卡推進 removedCards 陣列的最後
+    setRemovedCards((prev) => [...prev, cardToRemove]);
+  };
+
+  // 2. 用這個函式來「回上一張卡片」
+  const handleGoBack = () => {
+    console.log("handleGoBack called");
+    // 如果 removedCards 裡沒有東西，就不用做後面了
+    if (removedCards.length === 0) return;
+
+    // 取出 removedCards 最後一張（LIFO）
+    const copyRemovedCards = [...removedCards];
+    const lastCard = copyRemovedCards[copyRemovedCards.length - 1];
+
+    // 把它放回 cards 的最後面，並且從 removedCards 裡移掉
+    setCards((prev) => [...prev, lastCard]);
+    setRemovedCards((prev) => prev.slice(0, prev.length - 1));
+  };
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className=" h-screen container m-auto bg-neutral-300">
+      <div
+        // 背景滿版
+        className="grid  w-full place-items-center h-full"
+      >
+        {cards.map((card) => {
+          return (
+            <TinderCard
+              key={card.id}
+              cards={cards}
+              removeCard={removeCard}
+              {...card}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          );
+        })}
+        <button
+          className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          onClick={handleGoBack}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          回上一張
+        </button>
+      </div>
     </div>
   );
-}
+};
+
+export default SwipeCards;
