@@ -2,14 +2,18 @@
 import React, { useState, useEffect } from "react";
 import TinderCard from "./components/card";
 import { cardData } from "@/app/libs/data";
+import { useRouter } from "next/navigation";
 
 const SwipeCards = () => {
+  // 1. 把 useRouter() 放到元件內部，不能寫在最外層
+  const router = useRouter();
+
   const [cards, setCards] = useState([...cardData]);
   // 用來存「已經滑掉的卡片」
   const [removedCards, setRemovedCards] = useState<typeof cardData>([]);
 
   useEffect(() => {
-    console.log("removeCards:", removedCards);
+    console.log("removedCards:", removedCards);
   }, [removedCards]);
 
   useEffect(() => {
@@ -43,11 +47,17 @@ const SwipeCards = () => {
     setCards((prev) => [...prev, lastCard]);
     setRemovedCards((prev) => prev.slice(0, prev.length - 1));
   };
+
+  // 3. 把 handleGoToMenu 函式移到最外層，才能被 button 呼叫到
+  const handleGoToMenu = () => {
+    router.push("/MenuReviewPage"); 
+  };
+
   return (
-    <div className=" h-screen container m-auto bg-neutral-300">
+    <div className="h-screen container m-auto bg-neutral-300">
       <div
         // 背景滿版
-        className="grid  w-full place-items-center h-full"
+        className="grid w-full place-items-center h-full"
       >
         {cards.map((card) => {
           return (
@@ -64,6 +74,12 @@ const SwipeCards = () => {
           onClick={handleGoBack}
         >
           回上一張
+        </button>
+        <button
+          className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          onClick={handleGoToMenu}
+        >
+          瀏覽餐廳
         </button>
       </div>
     </div>
