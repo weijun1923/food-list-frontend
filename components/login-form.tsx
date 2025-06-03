@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LoaderCircle, CircleAlert } from "lucide-react";
+import { LoaderCircle, CircleAlert, Check } from "lucide-react";
 
 export function LoginForm({
   className,
@@ -25,6 +25,7 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -65,7 +66,7 @@ export function LoginForm({
         setError(message || "登入失敗，請稍後再試");
         return;
       }
-
+      setSuccess("登入成功，正在跳轉...");
       setEmail("");
       setPassword("");
       router.push("/");
@@ -118,6 +119,15 @@ export function LoginForm({
                     <AlertTitle>錯誤</AlertTitle>
                     <AlertDescription>
                       <p>{error}</p>
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {success && (
+                  <Alert className="bg-green-50 text-green-800">
+                    <Check />
+                    <AlertTitle>成功</AlertTitle>
+                    <AlertDescription className=" font-bold text-green-900">
+                      <p>{success}</p>
                     </AlertDescription>
                   </Alert>
                 )}
