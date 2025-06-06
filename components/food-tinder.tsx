@@ -43,13 +43,13 @@ export default function FoodTinder() {
 
         {/* Stats */}
         <div className="flex justify-between mb-6 text-sm">
-          <div className="flex items-center gap-2 text-green-600">
-            <Heart size={16} fill="currentColor" />
-            <span>喜歡: {likedCards.length}</span>
-          </div>
           <div className="flex items-center gap-2 text-red-600">
             <X size={16} />
             <span>跳過: {dislikedCards.length}</span>
+          </div>
+          <div className="flex items-center gap-2 text-green-600">
+            <Heart size={16} fill="currentColor" />
+            <span>喜歡: {likedCards.length}</span>
           </div>
         </div>
 
@@ -80,7 +80,6 @@ export default function FoodTinder() {
                     key={card.id}
                     {...card}
                     removeCard={removeCard}
-                    cards={cards}
                     index={index}
                     constraintsRef={containerRef}
                   />
