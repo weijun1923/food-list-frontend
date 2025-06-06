@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { cardData } from "@/app/libs/data";
-
+import { Card, CardContent } from "@/components/ui/card";
+import { initialCards } from "@/app/libs/data";
+import placeholderSvg from "@/public/placeholder.svg";
+import Image from "next/image";
 
 export default function RestaurantList() {
   return (
@@ -13,23 +14,23 @@ export default function RestaurantList() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {cardData.map((cardData) => (
+          {initialCards.map((cardData) => (
             <Card
               key={cardData.id}
               className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
             >
               <CardContent className="p-0">
                 <div className="relative">
-                  <img
-                    src={cardData.url || "/placeholder.svg"}
-                    alt={cardData.restaurantname}
+                  <Image
+                    src={cardData.url ? cardData.url : placeholderSvg}
+                    alt={cardData.restaurantName}
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300" />
                 </div>
                 <div className="p-4">
                   <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
-                    {cardData.restaurantname}
+                    {cardData.restaurantName}
                   </h3>
                 </div>
               </CardContent>
@@ -38,5 +39,5 @@ export default function RestaurantList() {
         </div>
       </div>
     </div>
-  )
+  );
 }
