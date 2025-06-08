@@ -9,6 +9,7 @@ export const initialCards: FoodCard[] = [
     cuisine: "中式料理",
     menuCategory: "麵食",
     rating: 4.4,
+    
   },
   {
     id: "2",
