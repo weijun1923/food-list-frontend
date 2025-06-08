@@ -5,6 +5,12 @@ export interface CardProps extends FoodCard {
   constraintsRef: RefObject<HTMLDivElement>;
 }
 
+export interface MenuItem {
+  name: string;    // 品項名稱
+  price: number;   // 價格
+  category: string; // 分類
+}
+
 export interface FoodCard {
   id: string;
   url: string;
@@ -13,4 +19,5 @@ export interface FoodCard {
   cuisine?: string;
   rating?: number;
   menuCategory?: string; // 添加菜單類別屬性
+  menuItems?: MenuItem[];
 }
