@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import Carousel from "@/components/carousel";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -12,9 +13,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import { Loader } from "lucide-react";
 import type { Slide } from "@/app/types";
+import { cn } from "@/lib/utils";
+import { uploadFilesToR2 } from "./actions";
+
 export default function CreateRestaurantPage() {
   // add the useSate to store the restaurant data
 
@@ -25,16 +29,115 @@ export default function CreateRestaurantPage() {
   const [price, setPrice] = useState<number>(0);
   const [previewUploadImage, setPreviewUploadImage] = useState<Slide[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [fileName, setFileName] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
 
+  useEffect(() => {
+    console.log("files.length:", files.length);
+    console.log("previewUploadImage.length:", previewUploadImage.length);
+  }, [files, previewUploadImage]);
+
+  interface R2PresignedPost {
+    url: string;
+    key: string;
+    fields: R2PresignedFileds;
+  }
+  interface R2PresignedFileds {
+    /** MIME type of the file to upload */
+    "Content-Type": string;
+    /** Object key under which to store the file */
+    key: string;
+    /** Base64‐encoded policy document */
+    policy: string;
+    /** AWS signature algorithm (always “AWS4-HMAC-SHA256”) */
+    "x-amz-algorithm": string;
+    /** Credential scope for signing the request */
+    "x-amz-credential": string;
+    /** ISO8601 timestamp when the signature was created */
+    "x-amz-date": string;
+    /** Signature string to authorize the upload */
+    "x-amz-signature": string;
+    /** Allow any additional form fields the upload might include */
+    [field: string]: string;
+  }
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files) return;
+    const fileList = event.target.files;
+    if (!fileList) return;
 
-    const files = Array.from(event.target.files);
-    const newPreivewUploadImage = files.map((file) => {
-      return { src: URL.createObjectURL(file) };
-    });
-    setPreviewUploadImage((prev) => [...prev, ...newPreivewUploadImage]);
+    const newFiles = Array.from(fileList);
+
+    setFiles((prev) => [...prev, ...newFiles]);
+
+    setFileName((prev) => [...prev, ...newFiles.map((file) => file.name)]);
+
+    setPreviewUploadImage((prev) => [
+      ...prev,
+      ...newFiles.map((file) => ({
+        src: URL.createObjectURL(file),
+      })),
+    ]);
   };
+
+  // first send the request to flask get r2 presigned url
+  const getPresignedUrl = async () => {
+    setLoading(true);
+    if (previewUploadImage.length === 0) return;
+    interface FilesInterface {
+      files: { name: string }[];
+    }
+    const files: FilesInterface = {
+      files: [],
+    };
+
+    // the image name use restaurantName/ + uuid + file name
+    for (let i = 0; i < fileName.length; i++) {
+      files.files.push({
+        name: restaurantName + "/" + uuidv4() + "-" + fileName[i],
+      });
+    }
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/images/presigned/upload",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(files),
+        }
+      );
+
+      if (!response.ok) {
+        console.log(response);
+      }
+
+      const data = await response.json();
+      return data as R2PresignedPost[];
+    } catch (error) {
+      console.error("Error fetching presigned URL:", error);
+    } finally {
+      setLoading(false);
+      setIsOpen(false);
+    }
+  };
+  // get the presigned url and upload the image to r2
+
+  const handleSubmit = async () => {
+    if (loading || previewUploadImage.length === 0) return;
+    setLoading(true);
+    try {
+      const presigned = await getPresignedUrl(); // <── 這裡拿到最新的陣列
+      if (presigned) {
+        await uploadFilesToR2(presigned, files); // 長度一致
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // then save the restaurant data and image key to the database
 
   useEffect(() => {
     return () => {
@@ -110,7 +213,6 @@ export default function CreateRestaurantPage() {
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">建立餐廳</h1>
-        {/* image upload */}
         {/* if user upload image show the preview image component */}
         {previewUploadImage && previewUploadImage.length > 0 && (
           <Carousel images={previewUploadImage} />
@@ -137,26 +239,71 @@ export default function CreateRestaurantPage() {
             </p>
           </div>
         )}
-
-        {/* if user not upload image show the upload image component */}
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        {/* 1. let user check the restaurant item it's current
+            2. if user check first get the presigned url
+              2-1. cleck the send button then set loading to true
+              2-2. if the presigned url is success then set loading to false and close the dialog
+            3. if user cloud be to change the restaurant item then close the dialog
+        */}
+        <Dialog
+          open={isOpen}
+          onOpenChange={(open) => {
+            if (!loading) setIsOpen(open);
+          }}
+        >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Share link</DialogTitle>
+              <DialogTitle>請確認餐廳資訊是否正確</DialogTitle>
               <DialogDescription>
-                Anyone who has this link will be able to view this.
+                如果確認後請點擊送出按鈕，否則請點擊關閉按鈕重新修改。
               </DialogDescription>
             </DialogHeader>
+            <div>
+              <div className="grid gap-4">
+                <div>
+                  <Label>餐廳名稱</Label>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {restaurantName}
+                  </p>
+                </div>
+                <div>
+                  <Label>菜名</Label>
+                  <p className="text-gray-700 dark:text-gray-300">{dishName}</p>
+                </div>
+                <div>
+                  <Label>菜系</Label>
+                  <p className="text-gray-700 dark:text-gray-300">{cuisine}</p>
+                </div>
+                <div>
+                  <Label>菜單類別</Label>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {menuCategory}
+                  </p>
+                </div>
+                <div>
+                  <Label>價格</Label>
+                  <p className="text-gray-700 dark:text-gray-300">{price} 元</p>
+                </div>
+              </div>
+            </div>
             <DialogFooter className="sm:justify-start">
               <DialogClose asChild>
-                <Button type="button" variant="secondary">
-                  Close
+                <Button type="button" variant="secondary" disabled={loading}>
+                  關閉
                 </Button>
               </DialogClose>
-              <Button type="submit">Share</Button>
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                className={cn({ loading: "spin" })}
+              >
+                {loading ? <Loader /> : "送出"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        {/* if user not upload image show the upload image component */}
         {!previewUploadImage ||
           (previewUploadImage.length === 0 && (
             <div className="flex items-center justify-center w-full">
