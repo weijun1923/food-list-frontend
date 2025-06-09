@@ -9,6 +9,7 @@ export const initialCards: FoodCard[] = [
     cuisine: "中式料理",
     menuCategory: "麵食",
     rating: 4.4,
+    price: 150,
   },
   {
     id: "2",
@@ -18,5 +19,6 @@ export const initialCards: FoodCard[] = [
     cuisine: "中式料理",
     menuCategory: "麵食",
     rating: 4.4,
+    price: 150,
   },
 ];

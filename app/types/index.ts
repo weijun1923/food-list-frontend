@@ -13,6 +13,7 @@ export interface FoodCard {
   cuisine?: string;
   rating?: number;
   menuCategory?: string; // 添加菜單類別屬性
+  price: number;
 }
 
 export interface Slide {

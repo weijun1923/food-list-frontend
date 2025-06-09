@@ -1,8 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
 import Carousel from "@/components/carousel";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import type { Slide } from "@/app/types";
+import { div, i } from "framer-motion/client";
 export default function CreateRestaurantPage() {
+  // add the useSate to store the restaurant data
+
+  const [restaurantName, setRestaurantName] = useState("");
+  const [dishName, setDishName] = useState("");
+  const [cuisine, setCuisine] = useState("");
+  const [menuCategory, setMenuCategory] = useState("");
+  const [price, setPrice] = useState<number>(0);
   const [previewUploadImage, setPreviewUploadImage] = useState<Slide[]>([]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,6 +33,78 @@ export default function CreateRestaurantPage() {
     };
   }, [previewUploadImage]);
 
+  {
+    /*     id: "1",
+    url: "",
+    restaurantName: "八方雲集",
+    dishName: "牛肉麵",
+    cuisine: "中式料理",
+    menuCategory: "麵食",
+    rating: 4.4,
+    price: 150, */
+  }
+  interface RestaurantInputConfig {
+    labelName: string;
+    htmlFor: string;
+    value: string | number;
+    placeholder: string;
+    type: string;
+    required: boolean;
+    id: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  }
+  const createRestaurant: RestaurantInputConfig[] = [
+    {
+      labelName: "餐廳名稱",
+      htmlFor: "restaurantName",
+      value: restaurantName,
+      placeholder: "請輸入餐廳名稱",
+      type: "text",
+      required: true,
+      id: "restaurantName",
+      onChange: (e) => setRestaurantName(e.target.value),
+    },
+    {
+      labelName: "菜名",
+      htmlFor: "dishName",
+      value: dishName,
+      placeholder: "請輸入菜名 eg: 牛肉麵",
+      type: "text",
+      required: true,
+      id: "dishName",
+      onChange: (e) => setDishName(e.target.value),
+    },
+    {
+      labelName: "菜系",
+      htmlFor: "cuisine",
+      value: cuisine,
+      placeholder: "請輸入菜系 eg: 中式, 西式, 日式",
+      type: "text",
+      required: true,
+      id: "cuisine",
+      onChange: (e) => setCuisine(e.target.value),
+    },
+    {
+      labelName: "菜單類別",
+      htmlFor: "menuCategory",
+      value: menuCategory,
+      placeholder: "請輸入菜單類別 eg: 麵食, 飯類, 餃類",
+      type: "text",
+      required: true,
+      id: "menuCategory",
+      onChange: (e) => setMenuCategory(e.target.value),
+    },
+    {
+      labelName: "價格",
+      htmlFor: "price",
+      value: price,
+      placeholder: "請輸入價格 eg: 150",
+      type: "number",
+      required: true,
+      id: "price",
+      onChange: (e) => setPrice(Number(e.target.value)),
+    },
+  ];
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
@@ -96,44 +178,24 @@ export default function CreateRestaurantPage() {
               </label>
             </div>
           ))}
+        {/* the user can add restaurant name , dishname , chisine , menucategort , price */}
 
-        <form className="space-y-4">
-          <div className="grid gap-3">
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
-            >
-              餐廳名稱
-            </label>
-            <input
-              id="name"
-              type="text"
-              placeholder="餐廳名稱"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        <form>
+          <div className="flex flex-col gap-6">
+            {createRestaurant.map((data) => (
+              <div key={data.id} className="grid gap-2">
+                <Label htmlFor={data.htmlFor}>{data.labelName}</Label>
+                <Input
+                  id={data.id}
+                  type={data.type}
+                  placeholder={data.placeholder}
+                  value={data.value}
+                  onChange={data.onChange}
+                  required={data.required}
+                />
+              </div>
+            ))}
           </div>
-          <div className="grid gap-3">
-            <label
-              htmlFor="location"
-              className="block text-sm font-medium text-gray-700"
-            >
-              餐廳位置
-            </label>
-            <input
-              id="location"
-              type="text"
-              placeholder="餐廳位置"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            建立餐廳
-          </button>
         </form>
       </div>
     </div>
