@@ -3,8 +3,18 @@ import { useEffect, useState } from "react";
 import Carousel from "@/components/carousel";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type { Slide } from "@/app/types";
-import { div, i } from "framer-motion/client";
 export default function CreateRestaurantPage() {
   // add the useSate to store the restaurant data
 
@@ -14,6 +24,7 @@ export default function CreateRestaurantPage() {
   const [menuCategory, setMenuCategory] = useState("");
   const [price, setPrice] = useState<number>(0);
   const [previewUploadImage, setPreviewUploadImage] = useState<Slide[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
@@ -33,16 +44,6 @@ export default function CreateRestaurantPage() {
     };
   }, [previewUploadImage]);
 
-  {
-    /*     id: "1",
-    url: "",
-    restaurantName: "八方雲集",
-    dishName: "牛肉麵",
-    cuisine: "中式料理",
-    menuCategory: "麵食",
-    rating: 4.4,
-    price: 150, */
-  }
   interface RestaurantInputConfig {
     labelName: string;
     htmlFor: string;
@@ -138,6 +139,24 @@ export default function CreateRestaurantPage() {
         )}
 
         {/* if user not upload image show the upload image component */}
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Share link</DialogTitle>
+              <DialogDescription>
+                Anyone who has this link will be able to view this.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-start">
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                  Close
+                </Button>
+              </DialogClose>
+              <Button type="submit">Share</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         {!previewUploadImage ||
           (previewUploadImage.length === 0 && (
             <div className="flex items-center justify-center w-full">
@@ -180,7 +199,12 @@ export default function CreateRestaurantPage() {
           ))}
         {/* the user can add restaurant name , dishname , chisine , menucategort , price */}
 
-        <form>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setIsOpen(true);
+          }}
+        >
           <div className="flex flex-col gap-6">
             {createRestaurant.map((data) => (
               <div key={data.id} className="grid gap-2">
@@ -195,6 +219,9 @@ export default function CreateRestaurantPage() {
                 />
               </div>
             ))}
+            <Button type={"submit"} className=" w-full">
+              新增餐廳
+            </Button>
           </div>
         </form>
       </div>
