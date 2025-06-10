@@ -17,7 +17,6 @@ import {
 import { Loader } from "lucide-react";
 import type { Slide } from "@/app/types";
 import { cn } from "@/lib/utils";
-import { uploadFilesToR2 } from "./actions";
 
 export default function CreateRestaurantPage() {
   // add the useSate to store the restaurant data
@@ -32,40 +31,37 @@ export default function CreateRestaurantPage() {
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
-
-  useEffect(() => {
-    console.log("files.length:", files.length);
-    console.log("previewUploadImage.length:", previewUploadImage.length);
-  }, [files, previewUploadImage]);
+  const [error, setError] = useState<string | null>(null);
 
   interface R2PresignedPost {
     url: string;
     key: string;
-    fields: R2PresignedFileds;
   }
-  interface R2PresignedFileds {
-    /** MIME type of the file to upload */
-    "Content-Type": string;
-    /** Object key under which to store the file */
-    key: string;
-    /** Base64‐encoded policy document */
-    policy: string;
-    /** AWS signature algorithm (always “AWS4-HMAC-SHA256”) */
-    "x-amz-algorithm": string;
-    /** Credential scope for signing the request */
-    "x-amz-credential": string;
-    /** ISO8601 timestamp when the signature was created */
-    "x-amz-date": string;
-    /** Signature string to authorize the upload */
-    "x-amz-signature": string;
-    /** Allow any additional form fields the upload might include */
-    [field: string]: string;
-  }
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files;
     if (!fileList) return;
-
+    // [x] check the file type is image
     const newFiles = Array.from(fileList);
+    const validImageTypes = ["image/jpeg", "image/png"];
+    const validFiles = newFiles.filter((file) =>
+      validImageTypes.includes(file.type)
+    );
+    if (validFiles.length === 0) {
+      setError("請上傳有效的圖片格式 (JPEG 或 PNG)");
+      return;
+    }
+    // [x] check the file size is less than 5MB
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const oversizedFiles = newFiles.filter((file) => file.size > maxFileSize);
+    if (oversizedFiles.length > 0) {
+      setError(
+        `以下檔案超過 5MB 限制，請選擇較小的檔案：\n${oversizedFiles
+          .map((file) => file.name)
+          .join(", ")}`
+      );
+      return;
+    }
 
     setFiles((prev) => [...prev, ...newFiles]);
 
@@ -79,7 +75,7 @@ export default function CreateRestaurantPage() {
     ]);
   };
 
-  // first send the request to flask get r2 presigned url
+  // [x] first send the request to flask get r2 presigned url
   const getPresignedUrl = async () => {
     setLoading(true);
     if (previewUploadImage.length === 0) return;
@@ -90,7 +86,7 @@ export default function CreateRestaurantPage() {
       files: [],
     };
 
-    // the image name use restaurantName/ + uuid + file name
+    // [x] the image name use restaurantName/ + uuid + file name
     for (let i = 0; i < fileName.length; i++) {
       files.files.push({
         name: restaurantName + "/" + uuidv4() + "-" + fileName[i],
@@ -121,23 +117,95 @@ export default function CreateRestaurantPage() {
       setIsOpen(false);
     }
   };
-  // get the presigned url and upload the image to r2
+  // [x] get the presigned url and upload the image to r2
+  const uploadFilesToR2 = async (
+    presigned: R2PresignedPost[],
+    files: File[]
+  ) => {
+    if (presigned.length === 0 || files.length === 0) return;
+    const uploadPromises = presigned.map((item, index) => {
+      const formData = new FormData();
+      formData.append("file", files[index]);
+      formData.append("key", item.key);
+      formData.append("url", item.url);
+
+      return fetch(item.url, {
+        method: "PUT",
+        body: formData,
+      });
+    });
+    try {
+      const results = await Promise.all(uploadPromises);
+      results.forEach((result, index) => {
+        if (!result.ok) {
+          console.error(`Failed to upload file ${files[index].name}`);
+        } else {
+          console.log(`File ${files[index].name} uploaded successfully`);
+        }
+      });
+    } catch (error) {
+      console.error("Error uploading files to R2:", error);
+    } finally {
+      setPreviewUploadImage([]);
+      setFiles([]);
+      setFileName([]);
+    }
+  };
+  // restaurant_name = data.get("restaurant_name")
+  // image_key = data.get("image_key")
+  // dish_name = data.get("dish_name")
+  // cuisine = data.get("cuisine")
+  // menu_category = data.get("menu_category")
+  // price = data.get("price")
+
+  const storeRestaurantData = async (presigned: R2PresignedPost[]) => {
+    let image_keys: string[] = [];
+
+    if (presigned.length !== 0) {
+      image_keys = presigned.map((item) => item.key);
+    }
+    const data = {
+      restaurant_name: restaurantName,
+      image_keys: image_keys,
+      dish_name: dishName,
+      cuisine: cuisine,
+      menu_category: menuCategory,
+      price: price,
+    };
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/restaurant/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        console.log(response);
+      }
+    } catch (error) {
+      console.log("Error storing restaurant data:", error);
+    }
+  };
 
   const handleSubmit = async () => {
     if (loading || previewUploadImage.length === 0) return;
     setLoading(true);
     try {
-      const presigned = await getPresignedUrl(); // <── 這裡拿到最新的陣列
+      const presigned = await getPresignedUrl();
       if (presigned) {
-        await uploadFilesToR2(presigned, files); // 長度一致
+        await uploadFilesToR2(presigned, files);
       }
+      await storeRestaurantData(presigned || []);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
-  // then save the restaurant data and image key to the database
+  // [] then save the restaurant data and image key to the database
 
   useEffect(() => {
     return () => {
@@ -213,32 +281,6 @@ export default function CreateRestaurantPage() {
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">建立餐廳</h1>
-        {/* if user upload image show the preview image component */}
-        {previewUploadImage && previewUploadImage.length > 0 && (
-          <Carousel images={previewUploadImage} />
-        )}
-        {/* if user upload image the upload imaeg component it's change to the button  */}
-        {previewUploadImage && previewUploadImage.length > 0 && (
-          <div>
-            <label
-              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              htmlFor="file_input"
-            ></label>
-            <input
-              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-sm p-2 cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-              aria-describedby="file_input_help"
-              id="file_input"
-              type="file"
-              onChange={handleImageUpload}
-            />
-            <p
-              className="mt-1 text-sm text-gray-500 dark:text-gray-300"
-              id="file_input_help"
-            >
-              PNG, JPG
-            </p>
-          </div>
-        )}
         {/* 1. let user check the restaurant item it's current
             2. if user check first get the presigned url
               2-1. cleck the send button then set loading to true
@@ -303,6 +345,35 @@ export default function CreateRestaurantPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        {/* if user upload image show the preview image component */}
+        {previewUploadImage && previewUploadImage.length > 0 && (
+          <Carousel images={previewUploadImage} />
+        )}
+        {/* if user upload image the upload imaeg component it's change to the button  */}
+        {previewUploadImage && previewUploadImage.length > 0 && (
+          <div>
+            <label
+              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              htmlFor="file_input"
+            ></label>
+            <input
+              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-sm p-2 cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+              aria-describedby="file_input_help"
+              id="file_input"
+              accept="image/png, image/jpeg"
+              multiple
+              type="file"
+              onChange={handleImageUpload}
+            />
+            <p
+              className="mt-1 text-sm text-gray-500 dark:text-gray-300"
+              id="file_input_help"
+            >
+              PNG, JPG
+            </p>
+          </div>
+        )}
+
         {/* if user not upload image show the upload image component */}
         {!previewUploadImage ||
           (previewUploadImage.length === 0 && (
@@ -339,11 +410,36 @@ export default function CreateRestaurantPage() {
                   id="dropzone-file"
                   type="file"
                   className="hidden"
+                  accept="image/png, image/jpeg"
+                  multiple
                   onChange={handleImageUpload}
                 />
               </label>
             </div>
           ))}
+
+        {/* if the image upload file type it's not current show the error message */}
+        {error && (
+          <div
+            className=" mt-2 flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
+            role="alert"
+          >
+            <svg
+              className="shrink-0 inline w-4 h-4 me-3"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <span className="sr-only">Info</span>
+            <div>
+              <span className="font-medium">錯誤訊息</span>
+              {error}
+            </div>
+          </div>
+        )}
         {/* the user can add restaurant name , dishname , chisine , menucategort , price */}
 
         <form

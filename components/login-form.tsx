@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getCookie } from "@/app/libs/cookie";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,12 +53,13 @@ export function LoginForm({
       email,
       password,
     };
+    const csrf = getCookie("access_token_csrf");
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/auth/login", {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
         credentials: "include",
       });
 
@@ -74,6 +76,8 @@ export function LoginForm({
       setError("登入失敗，請稍後再試");
     } finally {
       setLoading(false);
+      setError("");
+      setSuccess("");
     }
   };
 
