@@ -17,6 +17,7 @@ import {
 import { Loader } from "lucide-react";
 import type { Slide } from "@/app/types";
 import { cn } from "@/lib/utils";
+import { getCookie } from "@/app/libs/cookie";
 
 export default function CreateRestaurantPage() {
   // add the useSate to store the restaurant data
@@ -77,8 +78,14 @@ export default function CreateRestaurantPage() {
 
   // [x] first send the request to flask get r2 presigned url
   const getPresignedUrl = async () => {
-    setLoading(true);
-    if (previewUploadImage.length === 0) return;
+    console.log("getPresignedUrl called");
+    const csrf = getCookie("csrf_access_token");
+    if (!csrf) {
+      console.error("CSRF token not found");
+      return;
+    }
+
+    if (previewUploadImage.length === 0) return [];
     interface FilesInterface {
       files: { name: string }[];
     }
@@ -94,12 +101,14 @@ export default function CreateRestaurantPage() {
     }
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/api/images/presigned/upload",
+        "http://localhost:5000/api/images/presigned/upload",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRF-Token": csrf,
           },
+          credentials: "include",
           body: JSON.stringify(files),
         }
       );
@@ -112,9 +121,6 @@ export default function CreateRestaurantPage() {
       return data as R2PresignedPost[];
     } catch (error) {
       console.error("Error fetching presigned URL:", error);
-    } finally {
-      setLoading(false);
-      setIsOpen(false);
     }
   };
   // [x] get the presigned url and upload the image to r2
@@ -122,6 +128,7 @@ export default function CreateRestaurantPage() {
     presigned: R2PresignedPost[],
     files: File[]
   ) => {
+    console.log("uploadFilesToR2 called");
     if (presigned.length === 0 || files.length === 0) return;
     const uploadPromises = presigned.map((item, index) => {
       const formData = new FormData();
@@ -151,14 +158,14 @@ export default function CreateRestaurantPage() {
       setFileName([]);
     }
   };
-  // restaurant_name = data.get("restaurant_name")
-  // image_key = data.get("image_key")
-  // dish_name = data.get("dish_name")
-  // cuisine = data.get("cuisine")
-  // menu_category = data.get("menu_category")
-  // price = data.get("price")
 
   const storeRestaurantData = async (presigned: R2PresignedPost[]) => {
+    console.log("storeRestaurantData called");
+    const csrf = getCookie("csrf_access_token");
+    if (!csrf) {
+      console.error("CSRF token not found");
+      return;
+    }
     let image_keys: string[] = [];
 
     if (presigned.length !== 0) {
@@ -172,37 +179,51 @@ export default function CreateRestaurantPage() {
       menu_category: menuCategory,
       price: price,
     };
-
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/restaurant/add", {
+      const response = await fetch("http://localhost:5000/api/restaurant/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-CSRF-Token": csrf,
         },
+        credentials: "include",
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         console.log(response);
       }
+      console.log("response.ok", response.ok);
+      return response.ok;
     } catch (error) {
       console.log("Error storing restaurant data:", error);
     }
   };
 
   const handleSubmit = async () => {
-    if (loading || previewUploadImage.length === 0) return;
+    console.log("handleSubmit called");
+    if (loading) return;
     setLoading(true);
     try {
       const presigned = await getPresignedUrl();
-      if (presigned) {
+      if (presigned && presigned.length > 0) {
         await uploadFilesToR2(presigned, files);
       }
       await storeRestaurantData(presigned || []);
     } catch (err) {
       console.error(err);
     } finally {
+      setCuisine("");
+      setDishName("");
+      setMenuCategory("");
+      setPrice(0);
+      setRestaurantName("");
+      setFiles([]);
+      setFileName([]);
+      setPreviewUploadImage([]);
+      setError(null);
       setLoading(false);
+      setIsOpen(false);
     }
   };
   // [] then save the restaurant data and image key to the database
@@ -300,7 +321,7 @@ export default function CreateRestaurantPage() {
                 如果確認後請點擊送出按鈕，否則請點擊關閉按鈕重新修改。
               </DialogDescription>
             </DialogHeader>
-            <div>
+            <div className="mt-4">
               <div className="grid gap-4">
                 <div>
                   <Label>餐廳名稱</Label>

@@ -59,7 +59,7 @@ export function LoginForm({
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
 
@@ -71,13 +71,17 @@ export function LoginForm({
       setSuccess("登入成功，正在跳轉...");
       setEmail("");
       setPassword("");
+
+      // 給用戶一點時間看到成功訊息
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
+
       router.push("/");
     } catch {
       setError("登入失敗，請稍後再試");
     } finally {
       setLoading(false);
-      setError("");
-      setSuccess("");
     }
   };
 
