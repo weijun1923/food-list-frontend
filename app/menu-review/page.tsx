@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { initialCards } from "@/app/libs/data";
 import placeholderSvg from "@/public/placeholder.svg";
 import Image from "next/image";
+import Link from "next/link";   
 
 export default function RestaurantList() {
   return (
@@ -15,6 +16,11 @@ export default function RestaurantList() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {initialCards.map((cardData) => (
+            <Link                    
+              key={cardData.id}
+              href="/restaurant-menu"           
+              className="group block"                          
+            >
             <Card
               key={cardData.id}
               className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
@@ -35,6 +41,7 @@ export default function RestaurantList() {
                 </div>
               </CardContent>
             </Card>
+            </Link>
           ))}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import type { FoodCard } from "@/app/types";
+import type { FoodCard, MenuItem } from "@/app/types";
 
 export const initialCards: FoodCard[] = [
   {
