@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoaderCircle, CircleAlert, Check } from "lucide-react";
+import { useUserStore, UserState } from "@/app/libs/store";
 
 export function LoginForm({
   className,
@@ -28,6 +29,7 @@ export function LoginForm({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const { setUserName, setRole } = useUserStore<UserState>((state) => state);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,7 +55,6 @@ export function LoginForm({
       email,
       password,
     };
-    const csrf = getCookie("access_token_csrf");
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/login", {
@@ -68,16 +69,15 @@ export function LoginForm({
         setError(message || "登入失敗，請稍後再試");
         return;
       }
+      console.log(response);
       setSuccess("登入成功，正在跳轉...");
       setEmail("");
       setPassword("");
 
       // 給用戶一點時間看到成功訊息
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
-
-      router.push("/");
+      // setTimeout(() => {
+      //   router.push("/");
+      // }, 1000);
     } catch {
       setError("登入失敗，請稍後再試");
     } finally {

@@ -33,11 +33,11 @@ export default function FoodTinder() {
   };
 
   return (
-    <div className="mx-auto container h-screen flex flex-col justify-between items-center bg-gradient-to-br from-pink-50 to-orange-50 p-4">
+    <div className="mx-auto container h-screen flex flex-col justify-between items-center backdrop-blur-3xl  bg-white/30 p-4">
       <div className="  flex flex-col flex-1 lg:w-2/7 w-full mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">美食探索</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">美食選擇</h1>
           <p className="text-gray-600">滑動發現你的下一餐</p>
         </div>
 

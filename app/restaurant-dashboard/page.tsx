@@ -3,7 +3,6 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -12,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { getCookie } from "@/app/libs/cookie";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function RestaurantDashboardPage() {
@@ -62,8 +60,8 @@ export default function RestaurantDashboardPage() {
     loadRestaurants();
   }, []);
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-3xl">
+    <div className="min-h-screen py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">餐廳管理</h1>
         </div>
@@ -75,7 +73,7 @@ export default function RestaurantDashboardPage() {
             <Button>新增餐廳</Button>
           </Link>
         </div>
-        <Table>
+        <Table className=" bg-neutral-50 shadow-md rounded-lg p-3">
           <TableHeader>
             <TableRow>
               <TableHead>餐廳名稱</TableHead>
@@ -98,7 +96,9 @@ export default function RestaurantDashboardPage() {
                   <div className="flex gap-2 justify-end">
                     <Button>編輯餐廳</Button>
                     <Button>刪除餐廳</Button>
-                    <Link href={`/create/menu/${restaurant.id}`}>
+                    <Link
+                      href={`/create/menu/${restaurant.id}/${restaurant.restaurant_name}`}
+                    >
                       <Button className=" bg-blue-500 hover:bg-blue-300">
                         新增菜單
                       </Button>

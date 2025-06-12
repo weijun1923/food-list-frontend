@@ -20,23 +20,23 @@ import { Loader } from "lucide-react";
 import type { Slide } from "@/app/types";
 import { cn } from "@/lib/utils";
 import { getCookie } from "@/app/libs/cookie";
-import { None } from "framer-motion";
 
 export default function CreateRestaurantMenuPage() {
   // add the useSate to store the restaurant data
 
-  const [restaurantName, setRestaurantName] = useState("");
   const [dishName, setDishName] = useState("");
   const [cuisine, setCuisine] = useState("");
   const [menuCategory, setMenuCategory] = useState("");
-  const [price, setPrice] = useState<number>(0);
+  const [price, setPrice] = useState<string>("");
   const [previewUploadImage, setPreviewUploadImage] = useState<Slide[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [files, setFiles] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { restaurantId } = useParams();
+
+  const params = useParams();
+  const restaurantData = params.restaurantData as string[];
 
   interface R2PresignedPost {
     url: string;
@@ -99,7 +99,7 @@ export default function CreateRestaurantMenuPage() {
 
     // [x] the image name use restaurantName/ + uuid + file name
     files.files.push({
-      name: restaurantName + "/" + uuidv4() + "-" + fileName,
+      name: restaurantData[1] + "/" + uuidv4() + "-" + fileName,
     });
 
     try {
@@ -171,17 +171,21 @@ export default function CreateRestaurantMenuPage() {
     if (presigned.length !== 0) {
       image_keys = presigned.map((item) => item.key);
     }
+    const numericPrice = parseInt(price, 10);
+    if (isNaN(numericPrice)) {
+      setError("請輸入有效的價格");
+      return;
+    }
     const data = {
-      restaurant_name: restaurantName,
       image_key: image_keys[0],
       dish_name: dishName,
       cuisine: cuisine,
       menu_category: menuCategory,
-      price: price,
+      price: numericPrice,
     };
     try {
       const response = await fetch(
-        `http://localhost:5000/api/restaurant/add/${restaurantId}`,
+        `http://localhost:5000/api/restaurant-menus/add/${restaurantData[0]}`,
         {
           method: "POST",
           headers: {
@@ -219,7 +223,7 @@ export default function CreateRestaurantMenuPage() {
       setCuisine("");
       setDishName("");
       setMenuCategory("");
-      setPrice(0);
+      setPrice("");
       setFiles(null);
       setFileName(null);
       setPreviewUploadImage([]);
@@ -287,13 +291,13 @@ export default function CreateRestaurantMenuPage() {
       type: "number",
       required: true,
       id: "price",
-      onChange: (e) => setPrice(Number(e.target.value)),
+      onChange: (e) => setPrice(e.target.value),
     },
   ];
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">建立餐廳</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">建立菜單</h1>
         {/* 1. let user check the restaurant item it's current
             2. if user check first get the presigned url
               2-1. cleck the send button then set loading to true
@@ -308,7 +312,7 @@ export default function CreateRestaurantMenuPage() {
         >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>請確認餐廳資訊是否正確</DialogTitle>
+              <DialogTitle>請確認菜單資訊是否正確</DialogTitle>
               <DialogDescription>
                 如果確認後請點擊送出按鈕，否則請點擊關閉按鈕重新修改。
               </DialogDescription>
@@ -466,6 +470,7 @@ export default function CreateRestaurantMenuPage() {
                   value={data.value}
                   onChange={data.onChange}
                   required={data.required}
+                  className="bg-white"
                 />
               </div>
             ))}
