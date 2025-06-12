@@ -18,13 +18,14 @@ import { Loader } from "lucide-react";
 import type { Slide } from "@/app/types";
 import { cn } from "@/lib/utils";
 import { getCookie } from "@/app/libs/cookie";
+import { useRouter } from "next/navigation";
 
 export default function CreateRestaurantPage() {
   // add the useSate to store the restaurant data
 
   // restaurant_name = data.get("restaurant_name");
   // image_key = data.get("image_key");
-
+  const router = useRouter();
   const [restaurantName, setRestaurantName] = useState("");
   const [previewUploadImage, setPreviewUploadImage] = useState<Slide[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -202,7 +203,10 @@ export default function CreateRestaurantPage() {
       if (presigned && presigned.length > 0 && files) {
         await uploadFilesToR2(presigned, files);
       }
-      await storeRestaurantData(presigned || []);
+      const response = await storeRestaurantData(presigned || []);
+      if (response) {
+        router.push("/restaurant-dashboard");
+      }
     } catch (err) {
       console.error(err);
     } finally {

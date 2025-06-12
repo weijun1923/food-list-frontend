@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { getCookie } from "@/app/libs/cookie";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RestaurantDashboardPage() {
   // 1. create a new restaurant route
@@ -70,7 +71,9 @@ export default function RestaurantDashboardPage() {
           <p className="text-center text-gray-600 mb-2">
             這是餐廳管理的頁面，請在此處添加您的餐廳訊息或是餐廳菜單。
           </p>
-          <Button>新增餐廳</Button>
+          <Link href={"/create/restaurant"}>
+            <Button>新增餐廳</Button>
+          </Link>
         </div>
         <Table>
           <TableHeader>
@@ -95,9 +98,11 @@ export default function RestaurantDashboardPage() {
                   <div className="flex gap-2 justify-end">
                     <Button>編輯餐廳</Button>
                     <Button>刪除餐廳</Button>
-                    <Button className=" bg-blue-500 hover:bg-blue-300">
-                      新增菜單
-                    </Button>
+                    <Link href={`/create/menu/${restaurant.id}`}>
+                      <Button className=" bg-blue-500 hover:bg-blue-300">
+                        新增菜單
+                      </Button>
+                    </Link>
                   </div>
                 </TableCell>
               </TableRow>

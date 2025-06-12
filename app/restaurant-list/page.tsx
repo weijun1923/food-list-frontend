@@ -82,12 +82,17 @@ export default function RestaurantList() {
       );
       const presignedUrls = await fetchPresignedUrls(restaurantsImageKeys);
       // Map the presigned URLs back to the restaurant data
-      const restaurantData = data.restaurants.map(
-        (restaurant: any, index: number) => ({
-          ...restaurant,
-          image_key: presignedUrls[index] || "",
-        })
-      );
+      let urlCounter = 0;
+
+      const restaurantData = data.restaurants.map((restaurant: any) => {
+        if (restaurant.image_key != null) {
+          return {
+            ...restaurant,
+            image_key: presignedUrls[urlCounter++],
+          };
+        }
+        return { ...restaurant };
+      });
 
       if (restaurantData) {
         console.log("Restaurant data with images:", restaurantData);
@@ -116,10 +121,7 @@ export default function RestaurantList() {
                 className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
               >
                 <CardContent className="p-0">
-                  {/* 把高度或比例加在這裡 */}
                   <div className="relative w-full h-48">
-                    {" "}
-                    {/* or aspect-[3/2] */}
                     <Image
                       src={cardData.image_key ?? placeholderSvg}
                       alt={cardData.restaurant_name}

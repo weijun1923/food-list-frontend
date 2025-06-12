@@ -220,7 +220,6 @@ export default function CreateRestaurantMenuPage() {
       setDishName("");
       setMenuCategory("");
       setPrice(0);
-      setRestaurantName("");
       setFiles(null);
       setFileName(null);
       setPreviewUploadImage([]);
@@ -250,16 +249,6 @@ export default function CreateRestaurantMenuPage() {
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   }
   const createRestaurant: RestaurantInputConfig[] = [
-    {
-      labelName: "餐廳名稱",
-      htmlFor: "restaurantName",
-      value: restaurantName,
-      placeholder: "請輸入餐廳名稱",
-      type: "text",
-      required: true,
-      id: "restaurantName",
-      onChange: (e) => setRestaurantName(e.target.value),
-    },
     {
       labelName: "菜名",
       htmlFor: "dishName",
@@ -326,12 +315,6 @@ export default function CreateRestaurantMenuPage() {
             </DialogHeader>
             <div className="mt-4">
               <div className="grid gap-4">
-                <div>
-                  <Label>餐廳名稱</Label>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {restaurantName}
-                  </p>
-                </div>
                 <div>
                   <Label>菜名</Label>
                   <p className="text-gray-700 dark:text-gray-300">{dishName}</p>
