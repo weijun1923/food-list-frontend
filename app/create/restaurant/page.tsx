@@ -22,16 +22,15 @@ import { getCookie } from "@/app/libs/cookie";
 export default function CreateRestaurantPage() {
   // add the useSate to store the restaurant data
 
+  // restaurant_name = data.get("restaurant_name");
+  // image_key = data.get("image_key");
+
   const [restaurantName, setRestaurantName] = useState("");
-  const [dishName, setDishName] = useState("");
-  const [cuisine, setCuisine] = useState("");
-  const [menuCategory, setMenuCategory] = useState("");
-  const [price, setPrice] = useState<number>(0);
   const [previewUploadImage, setPreviewUploadImage] = useState<Slide[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [fileName, setFileName] = useState<string[]>([]);
-  const [files, setFiles] = useState<File[]>([]);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [files, setFiles] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   interface R2PresignedPost {
@@ -63,16 +62,16 @@ export default function CreateRestaurantPage() {
       );
       return;
     }
+    const file = validFiles[0];
 
-    setFiles((prev) => [...prev, ...newFiles]);
+    setFiles(file);
 
-    setFileName((prev) => [...prev, ...newFiles.map((file) => file.name)]);
+    setFileName(file.name);
 
-    setPreviewUploadImage((prev) => [
-      ...prev,
-      ...newFiles.map((file) => ({
+    setPreviewUploadImage([
+      {
         src: URL.createObjectURL(file),
-      })),
+      },
     ]);
   };
 
@@ -94,11 +93,10 @@ export default function CreateRestaurantPage() {
     };
 
     // [x] the image name use restaurantName/ + uuid + file name
-    for (let i = 0; i < fileName.length; i++) {
-      files.files.push({
-        name: restaurantName + "/" + uuidv4() + "-" + fileName[i],
-      });
-    }
+    files.files.push({
+      name: restaurantName + "/" + uuidv4() + "-" + fileName,
+    });
+
     try {
       const response = await fetch(
         "http://localhost:5000/api/images/presigned/upload",
@@ -124,38 +122,35 @@ export default function CreateRestaurantPage() {
     }
   };
   // [x] get the presigned url and upload the image to r2
-  const uploadFilesToR2 = async (
-    presigned: R2PresignedPost[],
-    files: File[]
-  ) => {
+  const uploadFilesToR2 = async (presigned: R2PresignedPost[], files: File) => {
     console.log("uploadFilesToR2 called");
-    if (presigned.length === 0 || files.length === 0) return;
-    const uploadPromises = presigned.map((item, index) => {
-      const formData = new FormData();
-      formData.append("file", files[index]);
-      formData.append("key", item.key);
-      formData.append("url", item.url);
-
-      return fetch(item.url, {
-        method: "PUT",
-        body: formData,
-      });
-    });
+    if (presigned.length === 0 || !files) return;
     try {
-      const results = await Promise.all(uploadPromises);
-      results.forEach((result, index) => {
-        if (!result.ok) {
-          console.error(`Failed to upload file ${files[index].name}`);
+      const results = await Promise.all(
+        presigned.map((item) =>
+          fetch(item.url, {
+            method: "PUT",
+            headers: {
+              "Content-Type": files.type,
+            },
+            body: files,
+          })
+        )
+      );
+
+      results.forEach((res) => {
+        if (!res.ok) {
+          console.error(`上傳失敗：${res.status} ${res.statusText}`);
         } else {
-          console.log(`File ${files[index].name} uploaded successfully`);
+          console.info(`已成功上傳：${files.name}`);
         }
       });
-    } catch (error) {
-      console.error("Error uploading files to R2:", error);
+    } catch (err) {
+      console.error("Error uploading files to R2:", err);
     } finally {
       setPreviewUploadImage([]);
-      setFiles([]);
-      setFileName([]);
+      setFiles(null);
+      setFileName(null);
     }
   };
 
@@ -169,15 +164,13 @@ export default function CreateRestaurantPage() {
     let image_keys: string[] = [];
 
     if (presigned.length !== 0) {
+      console.log("presigned", presigned);
       image_keys = presigned.map((item) => item.key);
     }
+    console.log("image_keys", image_keys);
     const data = {
       restaurant_name: restaurantName,
-      image_keys: image_keys,
-      dish_name: dishName,
-      cuisine: cuisine,
-      menu_category: menuCategory,
-      price: price,
+      image_key: image_keys[0],
     };
     try {
       const response = await fetch("http://localhost:5000/api/restaurant/add", {
@@ -206,20 +199,16 @@ export default function CreateRestaurantPage() {
     setLoading(true);
     try {
       const presigned = await getPresignedUrl();
-      if (presigned && presigned.length > 0) {
+      if (presigned && presigned.length > 0 && files) {
         await uploadFilesToR2(presigned, files);
       }
       await storeRestaurantData(presigned || []);
     } catch (err) {
       console.error(err);
     } finally {
-      setCuisine("");
-      setDishName("");
-      setMenuCategory("");
-      setPrice(0);
       setRestaurantName("");
-      setFiles([]);
-      setFileName([]);
+      setFiles(null);
+      setFileName(null);
       setPreviewUploadImage([]);
       setError(null);
       setLoading(false);
@@ -257,46 +246,6 @@ export default function CreateRestaurantPage() {
       id: "restaurantName",
       onChange: (e) => setRestaurantName(e.target.value),
     },
-    {
-      labelName: "菜名",
-      htmlFor: "dishName",
-      value: dishName,
-      placeholder: "請輸入菜名 eg: 牛肉麵",
-      type: "text",
-      required: true,
-      id: "dishName",
-      onChange: (e) => setDishName(e.target.value),
-    },
-    {
-      labelName: "菜系",
-      htmlFor: "cuisine",
-      value: cuisine,
-      placeholder: "請輸入菜系 eg: 中式, 西式, 日式",
-      type: "text",
-      required: true,
-      id: "cuisine",
-      onChange: (e) => setCuisine(e.target.value),
-    },
-    {
-      labelName: "菜單類別",
-      htmlFor: "menuCategory",
-      value: menuCategory,
-      placeholder: "請輸入菜單類別 eg: 麵食, 飯類, 餃類",
-      type: "text",
-      required: true,
-      id: "menuCategory",
-      onChange: (e) => setMenuCategory(e.target.value),
-    },
-    {
-      labelName: "價格",
-      htmlFor: "price",
-      value: price,
-      placeholder: "請輸入價格 eg: 150",
-      type: "number",
-      required: true,
-      id: "price",
-      onChange: (e) => setPrice(Number(e.target.value)),
-    },
   ];
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
@@ -328,24 +277,6 @@ export default function CreateRestaurantPage() {
                   <p className="text-gray-700 dark:text-gray-300">
                     {restaurantName}
                   </p>
-                </div>
-                <div>
-                  <Label>菜名</Label>
-                  <p className="text-gray-700 dark:text-gray-300">{dishName}</p>
-                </div>
-                <div>
-                  <Label>菜系</Label>
-                  <p className="text-gray-700 dark:text-gray-300">{cuisine}</p>
-                </div>
-                <div>
-                  <Label>菜單類別</Label>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {menuCategory}
-                  </p>
-                </div>
-                <div>
-                  <Label>價格</Label>
-                  <p className="text-gray-700 dark:text-gray-300">{price} 元</p>
                 </div>
               </div>
             </div>

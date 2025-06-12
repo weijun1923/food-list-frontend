@@ -1,25 +1,37 @@
-"use client"
-
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Star, MapPin } from "lucide-react"
-import { initialCards } from "@/app/libs/data"
-
-
-// 取全部商品
+"use client";
+import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Star, MapPin } from "lucide-react";
+import { initialCards } from "@/app/libs/data";
 
 export default function RestaurantMenu() {
-  const [selectedCategory, setSelectedCategory] = useState<string>("全部")
-  const restaurant = initialCards[0]
+  const [selectedCategory, setSelectedCategory] = useState<string>("全部");
+  const restaurant = initialCards[0];
+  const { restaurantId } = useParams();
+  console.log("Restaurant ID:", restaurantId);
 
-  const categories = ["全部", ...Array.from(new Set(restaurant.menuItems?.map((item) => item.category) ?? []))]
+  const categories = [
+    "全部",
+    ...Array.from(
+      new Set(restaurant.menuItems?.map((item) => item.category) ?? [])
+    ),
+  ];
 
   // 目前選中的分類
   const filteredMenuItems =
     selectedCategory === "全部"
       ? restaurant.menuItems ?? []
-      : restaurant.menuItems?.filter((item) => item.category === selectedCategory) ?? []
+      : restaurant.menuItems?.filter(
+          (item) => item.category === selectedCategory
+        ) ?? [];
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -29,7 +41,9 @@ export default function RestaurantMenu() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-2xl font-bold">{restaurant.restaurantName}</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                  {restaurant.restaurantName}
+                </CardTitle>
                 <CardDescription className="flex items-center gap-2 mt-2">
                   <MapPin className="w-4 h-4" />
                   {restaurant.cuisine}
@@ -53,7 +67,9 @@ export default function RestaurantMenu() {
               {categories.map((category) => (
                 <Button
                   key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
+                  variant={
+                    selectedCategory === category ? "default" : "outline"
+                  }
                   onClick={() => setSelectedCategory(category)}
                   className="rounded-full"
                 >
@@ -82,7 +98,9 @@ export default function RestaurantMenu() {
                     <h3 className="font-medium text-lg">{item.name}</h3>
                   </div>
                   <div className="text-right">
-                    <span className="text-xl font-bold text-orange-600">NT$ {item.price}</span>
+                    <span className="text-xl font-bold text-orange-600">
+                      NT$ {item.price}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -91,5 +109,5 @@ export default function RestaurantMenu() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

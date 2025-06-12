@@ -49,5 +49,7 @@ export async function middleware(req: NextRequest) {
  * - 排除公開的認證頁面
  */
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|login|register).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|login|register|restaurant-dashboard).*)",
+  ],
 };
