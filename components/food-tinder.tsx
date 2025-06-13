@@ -6,9 +6,11 @@ import TinderCard from "./tinder-card";
 import { RotateCcw, Heart, X } from "lucide-react";
 import type { FoodCard } from "../app/types";
 import { initialCards } from "@/app/libs/data";
+import { getCookie } from "@/app/libs/cookie";
+import { useEffect } from "react";
 
 export default function FoodTinder() {
-  const [cards, setCards] = useState<FoodCard[]>(initialCards);
+  const [cards, setCards] = useState<FoodCard[]>([]);
   const [likedCards, setLikedCards] = useState<FoodCard[]>([]);
   const [dislikedCards, setDislikedCards] = useState<FoodCard[]>([]);
   const containerRef = useRef<HTMLDivElement>(null!);
@@ -31,6 +33,137 @@ export default function FoodTinder() {
     setLikedCards([]);
     setDislikedCards([]);
   };
+
+  const [menusData, setMenuData] = useState<MenuCard[]>([]);
+
+  interface RestaurantCard {
+    id: string;
+    restaurant_name: string;
+    image_key: string | null;
+  }
+
+  interface MenuCard {
+    id: string;
+    restaurant_name: string;
+    restaurant_id: string;
+    image_key: string | null; // 這裡最後會被簽名 URL 取代
+    dish_name: string;
+    cuisine: string;
+    menu_category: string;
+    price: number;
+  }
+
+  // Fetch presigned URLs for restaurant images
+  const fetchPresignedUrls = async (imageKeys: string[]) => {
+    if (imageKeys.length === 0) return []; // 沒圖就直接回空陣列
+
+    const csrf = getCookie("csrf_access_token");
+    if (!csrf) throw new Error("CSRF token not found");
+
+    const res = await fetch("http://localhost:5000/api/images/presigned/get", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf,
+      },
+      credentials: "include",
+      body: JSON.stringify({ keys: imageKeys }),
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch presigned URLs");
+    const { urls } = await res.json(); // 後端回傳固定是 { urls: [...] }
+    return urls as string[];
+  };
+
+  const fetchRestaurants = async () => {
+    const csrf = getCookie("csrf_access_token");
+    if (!csrf) throw new Error("CSRF token not found");
+
+    const res = await fetch("http://localhost:5000/api/restaurant/all", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf,
+      },
+      credentials: "include",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch restaurants");
+    return res.json(); // 形如 { restaurants: [...] }
+  };
+  const fetchRestaurantMenus = async (restaurantId: string) => {
+    const csrf = getCookie("csrf_access_token");
+    if (!csrf) throw new Error("CSRF token not found");
+
+    const res = await fetch(
+      `http://localhost:5000/api/restaurant-menus/get/${restaurantId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrf,
+        },
+        credentials: "include",
+      }
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch menus");
+    const { menus } = await res.json(); // 形如 { menus: [...] }
+    return menus as MenuCard[];
+  };
+
+  useEffect(() => {
+    const loadRestaurantsAndMenus = async () => {
+      try {
+        // 1. 抓所有餐廳
+        const restaurantResp = await fetchRestaurants();
+        const restaurants: RestaurantCard[] = restaurantResp.restaurants;
+
+        // 2. 逐餐廳抓菜單，並平攤成單一陣列
+        const menuRespArr = await Promise.all(
+          restaurants.map((r) => fetchRestaurantMenus(r.id))
+        );
+        const allMenus: MenuCard[] = menuRespArr.flat();
+
+        // 3. 收集有圖的 image_key 去換簽名 URL
+        const imageKeys = allMenus
+          .filter((m) => m.image_key) // 排掉 null
+          .map((m) => m.image_key as string);
+
+        const presignedUrls = await fetchPresignedUrls(imageKeys);
+
+        // 4. 把簽名 URL 填回對應 menu
+        let urlIdx = 0;
+        const menusWithUrls = allMenus.map((menu) => {
+          if (menu.image_key) {
+            return { ...menu, image_key: presignedUrls[urlIdx++] };
+          }
+          return menu;
+        });
+
+        // 5. 轉換成 FoodCard 格式
+        const foodCards: FoodCard[] = menusWithUrls.map((menu) => ({
+          id: menu.id,
+          url: menu.image_key || "", // 使用 image_key 作為 url
+          restaurantName: menu.restaurant_name, // 映射到 restaurantName
+          dish_name: menu.dish_name,
+          cuisine: menu.cuisine,
+          menu_category: menu.menu_category,
+          price: menu.price,
+          restaurant_id: menu.restaurant_id,
+        }));
+
+        // 6. 丟進 state
+        console.log("menuwithurls", menusWithUrls);
+        setMenuData(menusWithUrls);
+        setCards(foodCards);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadRestaurantsAndMenus();
+  }, []); // ← 只跑一次
 
   return (
     <div className="mx-auto container h-screen flex flex-col justify-between items-center backdrop-blur-3xl  bg-white/30 p-4">

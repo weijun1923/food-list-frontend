@@ -45,3 +45,25 @@ export interface CarouselProps {
    */
   interval?: number;
 }
+
+// app/types.ts
+export interface Restaurant {
+  id: string;
+  restaurant_name: string;
+  image_key: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Menu {
+  id: string;
+  restaurant_id: string;
+  restaurant_name: string;
+  image_key: string | null;
+  dish_name: string;
+  cuisine: string;
+  menu_category: string;
+  price: number;
+  created_at?: string;
+  updated_at?: string;
+}

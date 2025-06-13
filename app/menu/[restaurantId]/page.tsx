@@ -30,7 +30,6 @@ export default function RestaurantMenu() {
   }
 
   const { restaurantId } = useParams();
-  console.log("Restaurant ID:", restaurantId);
 
   // fetch the restaurant data from the server
   const fetchRestaurants = async () => {
