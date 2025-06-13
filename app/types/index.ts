@@ -15,10 +15,10 @@ export interface FoodCard {
   id: string;
   url: string;
   restaurantName: string;
-  dishName?: string; // 添加菜名屬性
+  dishName?: string;
   cuisine?: string;
   rating?: number;
-  menuCategory?: string; // 添加菜單類別屬性
+  menuCategory?: string;
   price: number;
 }
 

@@ -131,9 +131,9 @@ export default function RestaurantMenu() {
           <Card className="mx-auto max-w-md text-center">
             <CardHeader>
               <ChefHat className="mx-auto h-16 w-16 text-gray-400" />
-              <CardTitle>No Menu Items Found</CardTitle>
+              <CardTitle>沒有找到菜單</CardTitle>
               <CardDescription>
-                This restaurant hasn&apos;t added any menu items yet.
+                這家餐廳目前沒有菜單，請稍後再試。
               </CardDescription>
             </CardHeader>
           </Card>

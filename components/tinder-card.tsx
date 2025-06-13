@@ -20,6 +20,17 @@ import type { CardProps } from "../app/types";
 import { cn } from "@/lib/utils";
 import placeholderSvg from "@/public/placeholder.svg";
 
+// export interface FoodCard {
+//   id: string;
+//   url: string;
+//   restaurantName: string;
+//   dishName?: string;
+//   cuisine?: string;
+//   rating?: number;
+//   menuCategory?: string;
+//   price: number;
+// }
+
 export default function TinderCard({
   id,
   url,
@@ -31,6 +42,7 @@ export default function TinderCard({
   constraintsRef,
   dishName,
   menuCategory,
+  price,
 }: CardProps) {
   const x = useMotionValue(0);
   const isTop = index === 0;
@@ -168,6 +180,7 @@ export default function TinderCard({
                   {restaurantName}
                 </h3>
                 <p>{dishName}</p>
+                <p>${price}</p>
               </div>
               <div className=" flex flex-col justify-center items-start">
                 <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">

@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import TinderCard from "./tinder-card";
 import { RotateCcw, Heart, X } from "lucide-react";
 import type { FoodCard } from "../app/types";
-import { initialCards } from "@/app/libs/data";
 import { getCookie } from "@/app/libs/cookie";
 import { useEffect } from "react";
 
@@ -14,6 +13,7 @@ export default function FoodTinder() {
   const [likedCards, setLikedCards] = useState<FoodCard[]>([]);
   const [dislikedCards, setDislikedCards] = useState<FoodCard[]>([]);
   const containerRef = useRef<HTMLDivElement>(null!);
+  const [menusData, setMenuData] = useState<FoodCard[]>([]);
 
   const removeCard = (id: string, action: "like" | "dislike") => {
     const cardToRemove = cards.find((card) => card.id === id);
@@ -29,12 +29,10 @@ export default function FoodTinder() {
   };
 
   const resetCards = () => {
-    setCards(initialCards);
+    setCards(menusData);
     setLikedCards([]);
     setDislikedCards([]);
   };
-
-  const [menusData, setMenuData] = useState<MenuCard[]>([]);
 
   interface RestaurantCard {
     id: string;
@@ -46,7 +44,7 @@ export default function FoodTinder() {
     id: string;
     restaurant_name: string;
     restaurant_id: string;
-    image_key: string | null; // 這裡最後會被簽名 URL 取代
+    image_key: string | null;
     dish_name: string;
     cuisine: string;
     menu_category: string;
@@ -55,7 +53,7 @@ export default function FoodTinder() {
 
   // Fetch presigned URLs for restaurant images
   const fetchPresignedUrls = async (imageKeys: string[]) => {
-    if (imageKeys.length === 0) return []; // 沒圖就直接回空陣列
+    if (imageKeys.length === 0) return [];
 
     const csrf = getCookie("csrf_access_token");
     if (!csrf) throw new Error("CSRF token not found");
@@ -71,7 +69,7 @@ export default function FoodTinder() {
     });
 
     if (!res.ok) throw new Error("Failed to fetch presigned URLs");
-    const { urls } = await res.json(); // 後端回傳固定是 { urls: [...] }
+    const { urls } = await res.json();
     return urls as string[];
   };
 
@@ -89,7 +87,7 @@ export default function FoodTinder() {
     });
 
     if (!res.ok) throw new Error("Failed to fetch restaurants");
-    return res.json(); // 形如 { restaurants: [...] }
+    return res.json();
   };
   const fetchRestaurantMenus = async (restaurantId: string) => {
     const csrf = getCookie("csrf_access_token");
@@ -108,31 +106,27 @@ export default function FoodTinder() {
     );
 
     if (!res.ok) throw new Error("Failed to fetch menus");
-    const { menus } = await res.json(); // 形如 { menus: [...] }
+    const { menus } = await res.json();
     return menus as MenuCard[];
   };
 
   useEffect(() => {
     const loadRestaurantsAndMenus = async () => {
       try {
-        // 1. 抓所有餐廳
         const restaurantResp = await fetchRestaurants();
         const restaurants: RestaurantCard[] = restaurantResp.restaurants;
 
-        // 2. 逐餐廳抓菜單，並平攤成單一陣列
         const menuRespArr = await Promise.all(
           restaurants.map((r) => fetchRestaurantMenus(r.id))
         );
         const allMenus: MenuCard[] = menuRespArr.flat();
 
-        // 3. 收集有圖的 image_key 去換簽名 URL
         const imageKeys = allMenus
-          .filter((m) => m.image_key) // 排掉 null
+          .filter((m) => m.image_key)
           .map((m) => m.image_key as string);
 
         const presignedUrls = await fetchPresignedUrls(imageKeys);
 
-        // 4. 把簽名 URL 填回對應 menu
         let urlIdx = 0;
         const menusWithUrls = allMenus.map((menu) => {
           if (menu.image_key) {
@@ -141,21 +135,19 @@ export default function FoodTinder() {
           return menu;
         });
 
-        // 5. 轉換成 FoodCard 格式
         const foodCards: FoodCard[] = menusWithUrls.map((menu) => ({
           id: menu.id,
-          url: menu.image_key || "", // 使用 image_key 作為 url
-          restaurantName: menu.restaurant_name, // 映射到 restaurantName
-          dish_name: menu.dish_name,
+          url: menu.image_key || "",
+          restaurantName: menu.restaurant_name,
+          dishName: menu.dish_name,
           cuisine: menu.cuisine,
-          menu_category: menu.menu_category,
+          menuCategory: menu.menu_category,
           price: menu.price,
           restaurant_id: menu.restaurant_id,
         }));
 
-        // 6. 丟進 state
         console.log("menuwithurls", menusWithUrls);
-        setMenuData(menusWithUrls);
+        setMenuData(foodCards);
         setCards(foodCards);
       } catch (err) {
         console.error(err);
@@ -163,7 +155,7 @@ export default function FoodTinder() {
     };
 
     loadRestaurantsAndMenus();
-  }, []); // ← 只跑一次
+  }, []);
 
   return (
     <div className="mx-auto container h-screen flex flex-col justify-between items-center backdrop-blur-3xl  bg-white/30 p-4">
