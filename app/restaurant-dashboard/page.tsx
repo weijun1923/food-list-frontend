@@ -50,6 +50,35 @@ export default function RestaurantDashboardPage() {
     return data;
   };
 
+  // 刪除餐廳
+  const handleDelete = async (id: string) => {
+    const csrf = getCookie("csrf_access_token");
+    if (!csrf) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/restaurant/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrf,
+        },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("刪除失敗：", error);
+        return;
+      }
+
+      // 刪除成功後更新前端 state，移除該項
+      setRestaurants((prev) =>
+        prev.filter((restaurant) => restaurant.id !== id)
+      );
+    } catch (error) {
+      console.error("刪除過程出錯：", error);
+    }
+  };
+
   useEffect(() => {
     const loadRestaurants = async () => {
       const data = await fetchRestaurants();
@@ -77,7 +106,7 @@ export default function RestaurantDashboardPage() {
           <TableHeader>
             <TableRow>
               <TableHead>餐廳名稱</TableHead>
-              <TableHead>創建時間</TableHead>
+              <TableHead>新增時間</TableHead>
               <TableHead>更新時間</TableHead>
               <TableHead className=" text-right">操作</TableHead>
             </TableRow>
@@ -95,7 +124,13 @@ export default function RestaurantDashboardPage() {
                 <TableCell className=" text-right">
                   <div className="flex gap-2 justify-end">
                     <Button>編輯餐廳</Button>
-                    <Button>刪除餐廳</Button>
+                    <Button
+                      className=" hover:bg-red-200"
+                      variant="destructive"
+                      onClick={() => handleDelete(restaurant.id)}
+                    >
+                      刪除餐廳
+                    </Button>
                     <Link
                       href={`/create/menu/${restaurant.id}/${restaurant.restaurant_name}`}
                     >
