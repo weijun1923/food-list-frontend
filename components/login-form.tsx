@@ -74,10 +74,9 @@ export function LoginForm({
       setEmail("");
       setPassword("");
 
-      // 給用戶一點時間看到成功訊息
-      // setTimeout(() => {
-      //   router.push("/");
-      // }, 1000);
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
     } catch {
       setError("登入失敗，請稍後再試");
     } finally {

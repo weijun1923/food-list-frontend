@@ -123,7 +123,6 @@ export default function RestaurantDashboardPage() {
                 </TableCell>
                 <TableCell className=" text-right">
                   <div className="flex gap-2 justify-end">
-                    <Button>編輯餐廳</Button>
                     <Button
                       className=" hover:bg-red-200"
                       variant="destructive"
