@@ -34,12 +34,6 @@ export default function FoodTinder() {
     setDislikedCards([]);
   };
 
-  interface RestaurantCard {
-    id: string;
-    restaurant_name: string;
-    image_key: string | null;
-  }
-
   interface MenuCard {
     id: string;
     restaurant_name: string;
@@ -51,21 +45,37 @@ export default function FoodTinder() {
     price: number;
   }
 
+  interface Restaurant {
+    restaurant_name: string;
+    menus: {
+      id: string;
+      restaurant_id: string;
+      image_key: string | null;
+      dish_name: string;
+      cuisine: string;
+      menu_category: string;
+      price: number;
+    }[];
+  }
+
   // 取得 presigned URLs 的 helper
   const fetchPresignedUrls = async (imageKeys: string[]): Promise<string[]> => {
     if (!imageKeys.length) return [];
     const csrf = getCookie("csrf_access_token");
     if (!csrf) throw new Error("CSRF token not found");
 
-    const res = await fetch("http://localhost:5000/api/images/presigned/get", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrf,
-      },
-      credentials: "include",
-      body: JSON.stringify({ keys: imageKeys }),
-    });
+    const res = await fetch(
+      `${process.env.API_POINT}/api/images/presigned/get`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrf,
+        },
+        credentials: "include",
+        body: JSON.stringify({ keys: imageKeys }),
+      }
+    );
 
     if (!res.ok) throw new Error("Failed to fetch presigned URLs");
     const { urls } = await res.json();
@@ -77,7 +87,7 @@ export default function FoodTinder() {
     const csrf = getCookie("csrf_access_token");
     if (!csrf) throw new Error("CSRF token not found");
 
-    const res = await fetch("http://localhost:5000/api/restaurant/with-menus", {
+    const res = await fetch(`${process.env.API_POINT}/api/restaurants/menus`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -90,8 +100,8 @@ export default function FoodTinder() {
     const { restaurants } = await res.json();
 
     // 展平所有菜單
-    const allMenus: MenuCard[] = restaurants.flatMap((r: any) =>
-      r.menus.map((m: any) => ({
+    const allMenus: MenuCard[] = restaurants.flatMap((r: Restaurant) =>
+      r.menus.map((m: Restaurant["menus"][0]) => ({
         id: m.id,
         restaurant_name: r.restaurant_name,
         restaurant_id: m.restaurant_id,
@@ -140,6 +150,7 @@ export default function FoodTinder() {
       }
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

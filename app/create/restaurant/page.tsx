@@ -100,7 +100,7 @@ export default function CreateRestaurantPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/images/presigned/upload",
+        `${process.env.API_POINT}/api/images/presigned/upload`,
         {
           method: "POST",
           headers: {
@@ -174,15 +174,18 @@ export default function CreateRestaurantPage() {
       image_key: image_keys[0],
     };
     try {
-      const response = await fetch("http://localhost:5000/api/restaurant/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrf,
-        },
-        credentials: "include",
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${process.env.API_POINT}/api/restaurant/add`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrf,
+          },
+          credentials: "include",
+          body: JSON.stringify(data),
+        }
+      );
 
       if (!response.ok) {
         console.log(response);

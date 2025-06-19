@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCookie } from "@/app/libs/cookie";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoaderCircle, CircleAlert, Check } from "lucide-react";
-import { useUserStore, UserState } from "@/app/libs/store";
 
 export function LoginForm({
   className,
@@ -29,7 +27,6 @@ export function LoginForm({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const { setUserName, setRole } = useUserStore<UserState>((state) => state);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -57,7 +54,7 @@ export function LoginForm({
     };
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${process.env.API_POINT}/api/auth/login`, {
         method: "POST",
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json" },

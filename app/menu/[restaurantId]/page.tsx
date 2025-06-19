@@ -39,7 +39,7 @@ export default function RestaurantMenu() {
       return;
     }
     const response = await fetch(
-      `http://localhost:5000/api/restaurant-menus/get/${restaurantId}`,
+      `${process.env.API_POINT}/api/restaurant-menus/get/${restaurantId}`,
       {
         method: "GET",
         headers: {
@@ -66,7 +66,7 @@ export default function RestaurantMenu() {
       return;
     }
     const response = await fetch(
-      "http://localhost:5000/api/images/presigned/get",
+      `${process.env.API_POINT}/api/images/presigned/get`,
       {
         method: "POST",
         headers: {
@@ -117,6 +117,7 @@ export default function RestaurantMenu() {
       }
     };
     loadRestaurants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantId]);
 
   return (

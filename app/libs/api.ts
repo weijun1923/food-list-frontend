@@ -1,7 +1,7 @@
 // app/lib/api.ts
 import { getCookie } from "@/app/libs/cookie";
 
-const BASE = "http://localhost:5000/api";
+const BASE = process.env.API_POINT;
 
 function authHeader() {
   const csrf = getCookie("csrf_access_token");

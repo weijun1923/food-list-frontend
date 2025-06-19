@@ -104,7 +104,7 @@ export default function CreateRestaurantMenuPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/images/presigned/upload",
+        `${process.env.API_POINT}/api/images/presigned/upload`,
         {
           method: "POST",
           headers: {
@@ -185,7 +185,7 @@ export default function CreateRestaurantMenuPage() {
     };
     try {
       const response = await fetch(
-        `http://localhost:5000/api/restaurant-menus/add/${restaurantData[0]}`,
+        `${process.env.API_POINT}/api/restaurant-menus/add/${restaurantData[0]}`,
         {
           method: "POST",
           headers: {
