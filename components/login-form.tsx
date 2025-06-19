@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoaderCircle, CircleAlert, Check } from "lucide-react";
+console.log(process.env.NEXT_PUBLIC_API_POINT);
 
 export function LoginForm({
   className,
@@ -54,12 +55,15 @@ export function LoginForm({
     };
 
     try {
-      const response = await fetch(`${process.env.API_POINT}/api/auth/login`, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_POINT}/api/auth/login`,
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         const { message } = await response.json();
