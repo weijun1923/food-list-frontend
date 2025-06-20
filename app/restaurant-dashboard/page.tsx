@@ -33,17 +33,14 @@ export default function RestaurantDashboardPage() {
       console.error("CSRF token not found");
       return;
     }
-    const response = await fetch(
-      `${process.env.API_POINT}/api/restaurant/all`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrf,
-        },
-        credentials: "include",
-      }
-    );
+    const response = await fetch("/api/restaurant/all", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf,
+      },
+      credentials: "include",
+    });
     if (!response.ok) {
       console.error("Failed to fetch restaurants");
       return;
@@ -59,7 +56,7 @@ export default function RestaurantDashboardPage() {
     if (!csrf) return;
 
     try {
-      const res = await fetch(`${process.env.API_POINT}/api/restaurant/${id}`, {
+      const res = await fetch(`/api/restaurant/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

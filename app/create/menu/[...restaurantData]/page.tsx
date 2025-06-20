@@ -103,18 +103,15 @@ export default function CreateRestaurantMenuPage() {
     });
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_POINT}/api/images/presigned/upload`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrf,
-          },
-          credentials: "include",
-          body: JSON.stringify(files),
-        }
-      );
+      const response = await fetch("/api/images/presigned/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrf,
+        },
+        credentials: "include",
+        body: JSON.stringify(files),
+      });
 
       if (!response.ok) {
         console.log(response);
@@ -185,7 +182,7 @@ export default function CreateRestaurantMenuPage() {
     };
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_POINT}/api/restaurant-menus/add/${restaurantData[0]}`,
+        `/api/restaurant-menus/add/${restaurantData[0]}`,
         {
           method: "POST",
           headers: {

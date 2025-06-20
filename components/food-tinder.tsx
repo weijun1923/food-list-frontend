@@ -64,18 +64,15 @@ export default function FoodTinder() {
     const csrf = getCookie("csrf_access_token");
     if (!csrf) throw new Error("CSRF token not found");
 
-    const res = await fetch(
-      `${process.env.API_POINT}/api/images/presigned/get`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrf,
-        },
-        credentials: "include",
-        body: JSON.stringify({ keys: imageKeys }),
-      }
-    );
+    const res = await fetch("/api/images/presigned/get", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf,
+      },
+      credentials: "include",
+      body: JSON.stringify({ keys: imageKeys }),
+    });
 
     if (!res.ok) throw new Error("Failed to fetch presigned URLs");
     const { urls } = await res.json();
@@ -87,7 +84,7 @@ export default function FoodTinder() {
     const csrf = getCookie("csrf_access_token");
     if (!csrf) throw new Error("CSRF token not found");
 
-    const res = await fetch(`${process.env.API_POINT}/api/restaurants/menus`, {
+    const res = await fetch("/api/restaurant/with-menus", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

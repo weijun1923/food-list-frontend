@@ -15,6 +15,10 @@ RUN bun install --frozen-lockfile
 ############################################
 FROM oven/bun:1-alpine AS builder
 WORKDIR /app
+
+ARG NEXT_PUBLIC_API_POINT
+ENV NEXT_PUBLIC_API_POINT=${NEXT_PUBLIC_API_POINT}
+
 # Reuse installed deps
 COPY --from=deps /app/node_modules ./node_modules
 # Copy in the rest of your source

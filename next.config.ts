@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
+const API_POINT = process.env.NEXT_PUBLIC_API_POINT as string;
+
 const nextConfig: NextConfig = {
   output: "standalone",
-  /* config options here */
   images: {
     remotePatterns: [
       {
@@ -15,6 +16,15 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${API_POINT}/api/:path*`,
+      },
+    ];
   },
 };
 

@@ -38,17 +38,14 @@ export default function RestaurantMenu() {
       console.error("CSRF token not found");
       return;
     }
-    const response = await fetch(
-      `${process.env.API_POINT}/api/restaurant-menus/get/${restaurantId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrf,
-        },
-        credentials: "include",
-      }
-    );
+    const response = await fetch(`/api/restaurant-menus/get/${restaurantId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf,
+      },
+      credentials: "include",
+    });
     if (!response.ok) {
       console.error("Failed to fetch restaurants");
       return;
@@ -65,18 +62,15 @@ export default function RestaurantMenu() {
       console.error("CSRF token not found");
       return;
     }
-    const response = await fetch(
-      `${process.env.API_POINT}/api/images/presigned/get`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrf,
-        },
-        credentials: "include",
-        body: JSON.stringify({ keys: imageKeys }),
-      }
-    );
+    const response = await fetch(`/api/images/presigned/get`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf,
+      },
+      credentials: "include",
+      body: JSON.stringify({ keys: imageKeys }),
+    });
     if (!response.ok) {
       console.error("Failed to fetch presigned URLs");
       return;

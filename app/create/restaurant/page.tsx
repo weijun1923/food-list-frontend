@@ -99,18 +99,15 @@ export default function CreateRestaurantPage() {
     });
 
     try {
-      const response = await fetch(
-        `${process.env.API_POINT}/api/images/presigned/upload`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrf,
-          },
-          credentials: "include",
-          body: JSON.stringify(files),
-        }
-      );
+      const response = await fetch(`/api/images/presigned/upload`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrf,
+        },
+        credentials: "include",
+        body: JSON.stringify(files),
+      });
 
       if (!response.ok) {
         console.log(response);
@@ -174,18 +171,15 @@ export default function CreateRestaurantPage() {
       image_key: image_keys[0],
     };
     try {
-      const response = await fetch(
-        `${process.env.API_POINT}/api/restaurant/add`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrf,
-          },
-          credentials: "include",
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetch(`/api/restaurant/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrf,
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
 
       if (!response.ok) {
         console.log(response);
